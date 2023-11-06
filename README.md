@@ -12,7 +12,7 @@ Follow these instructions to get the project up and running on your local machin
 
 ### Prerequisites
 
-- [Rust and Cargo](https://www.rust-lang.org/) (Rust's package manager)
+- [Cargo](https://www.rust-lang.org/) (Rust's package manager)
 
 ### Installation
 
@@ -43,7 +43,7 @@ SUBCOMMANDS:
     combine    Combine shards into a secret
     help       Print this message or the help of the given subcommand(s)
     shard      Shard a secret into shards
-``````
+```
 
 ### Creating Shares
 
