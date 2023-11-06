@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 
-/// Main command line program
+/// Rust-based command-line application that implements Shamir's Secret Sharing algorithm
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
 pub struct Cli {
