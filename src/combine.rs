@@ -45,7 +45,6 @@ fn combine_files(shard_paths: &[String], output_path: &Path) -> io::Result<()> {
     Ok(())
 }
 
-
 /// Orchestrates the combination of shard files found within a specified directory
 /// and writes the result to the given file path.
 ///
@@ -70,11 +69,11 @@ fn combine_files(shard_paths: &[String], output_path: &Path) -> io::Result<()> {
 ///
 /// assert!(result.is_ok());
 /// ```
-pub fn combine_secret(shards_dir: &PathBuf, recovered_secret_path: &PathBuf) -> io::Result<()> {
+pub fn combine_secret(shards_dir: &PathBuf, recovered_secret_path: &Path) -> io::Result<()> {
     let shard_paths: Vec<String> = std::fs::read_dir(shards_dir)?
         .filter_map(Result::ok)
         .map(|entry| entry.path().display().to_string())
         .collect();
 
-    combine_files(&shard_paths, recovered_secret_path.as_path())
+    combine_files(&shard_paths, recovered_secret_path)
 }

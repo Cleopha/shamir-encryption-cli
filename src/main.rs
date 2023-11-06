@@ -7,11 +7,11 @@ use crate::combine::combine_secret;
 use crate::sharding::shard_secret;
 
 mod cli;
+mod combine;
 mod gf256;
 mod polynomial;
 mod shamir;
 mod sharding;
-mod combine;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
@@ -38,7 +38,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         } => {
             combine_secret(&shards_dir, &recovered_secret_path)?;
             println!("{}", "Combine complete!".green());
-            println!("Recovered secret saved to {}", recovered_secret_path.to_string_lossy().bright_blue());
+            println!(
+                "Recovered secret saved to {}",
+                recovered_secret_path.to_string_lossy().bright_blue()
+            );
         }
     }
 

@@ -78,7 +78,7 @@ fn shard_file(path: &Path, parts: usize, threshold: usize) -> io::Result<Vec<Str
 /// }
 /// ```
 pub fn shard_secret(
-    secret_path: &PathBuf,
+    secret_path: &Path,
     shards_path: &PathBuf,
     parts: usize,
     threshold: usize,
@@ -88,7 +88,7 @@ pub fn shard_secret(
         fs::create_dir_all(shards_path)?;
     }
 
-    let shard_paths = shard_file(secret_path.as_path(), parts, threshold)?;
+    let shard_paths = shard_file(secret_path, parts, threshold)?;
 
     // Move shard files to the desired directory if necessary
     let mut new_shard_paths = Vec::new();

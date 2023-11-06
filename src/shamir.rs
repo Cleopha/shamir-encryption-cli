@@ -1,7 +1,11 @@
 use crate::{gf256::GF256, polynomial::Polynomial};
-use rand::seq::IteratorRandom;
-use std::collections::HashSet;
 use indicatif::{ProgressBar, ProgressStyle};
+use rand::seq::IteratorRandom;
+use rayon::prelude::*;
+use std::{
+    collections::HashSet,
+    sync::{Arc, Mutex},
+};
 
 type Shares = Vec<Vec<u8>>;
 
@@ -87,8 +91,10 @@ pub fn split(secret: &[u8], parts: usize, threshold: usize) -> Shares {
 
     // Create a progress bar with the total number of steps equal to the length of the secret
     let pb = ProgressBar::new((secret.len() - 1) as u64);
-    let style = ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} ({eta})")
-        .unwrap_or_else(|e| panic!("Progress bar template error: {}", e)); // Or handle it however you prefer
+    let style = ProgressStyle::with_template(
+        "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} ({eta})",
+    )
+    .unwrap_or_else(|e| panic!("Progress bar template error: {}", e)); // Or handle it however you prefer
 
     // Set the progress characters
     pb.set_style(style.progress_chars("#>-"));
@@ -163,27 +169,43 @@ pub fn combine(parts: Shares) -> Vec<u8> {
         })
         .collect();
 
-
-    
     // Initialize the secret vector
     let mut secret = vec![0; first_part_len - 1];
 
     // Create a progress bar with the total number of steps equal to the length of the secret
     let pb = ProgressBar::new((secret.len() - 1) as u64);
-    let style = ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} ({eta})")
-        .unwrap_or_else(|e| panic!("Progress bar template error: {}", e)); // Or handle it however you prefer
+    let style = ProgressStyle::with_template(
+        "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} ({eta})",
+    )
+    .unwrap_or_else(|e| panic!("Progress bar template error: {}", e)); // Or handle it however you prefer
 
     // Set the progress characters
     pb.set_style(style.progress_chars("#>-"));
+
+    // Arc and Mutex to safely share the progress bar between threads
+    let pb_thread = Arc::new(Mutex::new(pb));
+
+    // Parallelization with rayon
     // Interpolate the polynomial at 0 for each byte of the secret
-    for idx in 0..secret.len() {
-        let y_samples: Vec<u8> = parts.iter().map(|part| part[idx]).collect();
-        secret[idx] = interpolate_polynomial(&x_samples, &y_samples, 0);
+    secret
+        .par_iter_mut()
+        .enumerate()
+        .for_each(|(idx, secret_byte)| {
+            let y_samples: Vec<u8> = parts.iter().map(|part| part[idx]).collect();
+            *secret_byte = interpolate_polynomial(&x_samples, &y_samples, 0);
 
-        pb.inc(1);
-    }
+            // Incr Progress bar like thread-safe
+            let pb_i = pb_thread.lock().unwrap();
+            pb_i.inc(1);
+            drop(pb_i); // Release the lock immediately after use
+        });
 
-    pb.finish_with_message("Combination complete");
+    Arc::try_unwrap(pb_thread)
+        .expect("PB still has multiple owners")
+        .into_inner()
+        .expect("Mutex cannot be locked")
+        .finish_with_message("Combination complete");
+
     secret
 }
 
