@@ -2,14 +2,21 @@
 name = "shamir-encryption"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "MIT"
+description = "Rust-based command-line application that implements Shamir's Secret Sharing algorithm"
+authors = ["Coline Seguret <coline.seguret@epitech.eu>"]
+homepage = "https://github.com/Cleopha/shamir-encryption-cli"
+repository = "https://github.com/Cleopha/shamir-encryption-cli"
+documentation = "https://github.com/Cleopha/shamir-encryption-cli"
+keywords = ["algorithm", "encryption"]
+readme = "README.md"
+exclude = ["/.github"]
 
 [dependencies]
-colored = "*"
-rand = "0.8.5"
+colored = "2"
+rand = "0.8"
 tokio = { version = "1", features = ["full"] }
-bytes = "1.1"
+bytes = "1.5"
 clap = { version = "3", features = ["derive"] }
-indicatif = "0.17.7"
-rayon = "1.8.0"
+indicatif = "0.17"
+rayon = "1.8"

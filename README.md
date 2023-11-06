@@ -12,25 +12,24 @@ Follow these instructions to get the project up and running on your local machin
 
 ### Prerequisites
 
-- [Rust and Cargo](https://www.rust-lang.org/) (Rust's package manager)
+- [Cargo](https://www.rust-lang.org/) (Rust's package manager)
 
 ### Installation
 
 Clone the repository and build the project:
 
 ```sh
-git clone https://github.com/yourusername/shamir-secret-sharing.git
+git clone https://github.com/Cleopha/shamir-encryption-cli.git
 cd shamir-secret-sharing
-cargo build --release
-```
 
-The built executable will be located at `target/release/`.
+cargo install --path .
+```
 
 ## Usage
 
-```sh
+```
 shamir-encryption 0.1.0
-Main command line program
+Rust-based command-line application that implements Shamir's Secret Sharing algorithm
 
 USAGE:
     shamir-encryption <SUBCOMMAND>
@@ -43,7 +42,7 @@ SUBCOMMANDS:
     combine    Combine shards into a secret
     help       Print this message or the help of the given subcommand(s)
     shard      Shard a secret into shards
-``````
+```
 
 ### Creating Shares
 
