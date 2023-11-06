@@ -1,6 +1,7 @@
 use crate::{gf256::GF256, polynomial::Polynomial};
 use rand::seq::IteratorRandom;
 use std::collections::HashSet;
+use indicatif::{ProgressBar, ProgressStyle};
 
 type Shares = Vec<Vec<u8>>;
 
@@ -84,6 +85,14 @@ pub fn split(secret: &[u8], parts: usize, threshold: usize) -> Shares {
     let mut rng = rand::thread_rng();
     let x_coordinates: Vec<u8> = (1..=255_u8).choose_multiple(&mut rng, parts);
 
+    // Create a progress bar with the total number of steps equal to the length of the secret
+    let pb = ProgressBar::new((secret.len() - 1) as u64);
+    let style = ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} ({eta})")
+        .unwrap_or_else(|e| panic!("Progress bar template error: {}", e)); // Or handle it however you prefer
+
+    // Set the progress characters
+    pb.set_style(style.progress_chars("#>-"));
+
     // Create empty shares with preallocated space
     let mut shares: Shares = x_coordinates
         .iter()
@@ -100,8 +109,10 @@ pub fn split(secret: &[u8], parts: usize, threshold: usize) -> Shares {
         x_coordinates.iter().enumerate().for_each(|(i, &x)| {
             shares[i][idx] = polynomial.evaluate(x);
         });
+        pb.inc(1);
     });
 
+    pb.finish_with_message("Sharding complete");
     shares
 }
 
@@ -152,15 +163,27 @@ pub fn combine(parts: Shares) -> Vec<u8> {
         })
         .collect();
 
+
+    
     // Initialize the secret vector
     let mut secret = vec![0; first_part_len - 1];
 
+    // Create a progress bar with the total number of steps equal to the length of the secret
+    let pb = ProgressBar::new((secret.len() - 1) as u64);
+    let style = ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} ({eta})")
+        .unwrap_or_else(|e| panic!("Progress bar template error: {}", e)); // Or handle it however you prefer
+
+    // Set the progress characters
+    pb.set_style(style.progress_chars("#>-"));
     // Interpolate the polynomial at 0 for each byte of the secret
     for idx in 0..secret.len() {
         let y_samples: Vec<u8> = parts.iter().map(|part| part[idx]).collect();
         secret[idx] = interpolate_polynomial(&x_samples, &y_samples, 0);
+
+        pb.inc(1);
     }
 
+    pb.finish_with_message("Combination complete");
     secret
 }
 
